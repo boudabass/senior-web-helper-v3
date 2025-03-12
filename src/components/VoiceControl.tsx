@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
+import { Mic, MicOff, Volume2, VolumeX, HelpCircle } from 'lucide-react';
 import { createSpeechRecognition, speak, checkSpeechSupport } from '@/utils/speechUtils';
 import { Command, parseVoiceCommand } from '@/utils/browserCommands';
 import { useToast } from "@/hooks/use-toast";
@@ -114,7 +114,31 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ onCommand, isEnabled }) => 
     }
   };
 
+  const showHelp = () => {
+    if (voiceEnabled) {
+      speak('Voici les commandes disponibles: Ouvrir suivi du nom d\'un site web, Rechercher suivi de votre requête, Retour pour revenir en arrière, Défiler vers le bas ou le haut, Agrandir le texte, et Aide pour afficher cette liste.');
+    }
+    
+    toast({
+      title: "Aide - Commandes Vocales",
+      description: `
+        • "Ouvrir [site web]" - Ex: "Ouvrir Google"
+        • "Rechercher [terme]" - Ex: "Rechercher météo Paris"
+        • "Retour" - Revenir à la page précédente
+        • "Défiler vers le bas/haut" - Faire défiler la page
+        • "Agrandir le texte" - Augmenter la taille du texte
+        • "Aide" - Afficher cette liste des commandes
+      `,
+      duration: 8000,
+    });
+  };
+
   const processCommand = (text: string) => {
+    if (text.toLowerCase().includes('aide') || text.toLowerCase().includes('commandes')) {
+      showHelp();
+      return onCommand({ type: 'UNKNOWN' });
+    }
+    
     const command = parseVoiceCommand(text);
     
     if (voiceEnabled) {

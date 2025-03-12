@@ -9,7 +9,11 @@ import {
   Search, 
   Link as LinkIcon,
   Book,
-  X
+  X,
+  ArrowUp,
+  ArrowDown,
+  ZoomIn,
+  ZoomOut
 } from 'lucide-react';
 import { Command, extractPageContent } from '@/utils/browserCommands';
 import { speak } from '@/utils/speechUtils';
@@ -30,47 +34,6 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
   const [historyIndex, setHistoryIndex] = useState(-1);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const { toast } = useToast();
-
-  useEffect(() => {
-    if (!command) return;
-
-    switch (command.type) {
-      case 'OPEN_URL':
-        if (typeof command.payload === 'string') {
-          navigateTo(command.payload);
-        }
-        break;
-      case 'SEARCH':
-        if (typeof command.payload === 'string') {
-          const searchQuery = encodeURIComponent(command.payload);
-          navigateTo(`https://www.google.com/search?q=${searchQuery}`);
-        }
-        break;
-      case 'GO_BACK':
-        goBack();
-        break;
-      case 'GO_FORWARD':
-        goForward();
-        break;
-      case 'HOME':
-        navigateTo('https://www.google.com');
-        break;
-      case 'READ_PAGE':
-        readPageContent();
-        break;
-      case 'CLICK':
-        if (typeof command.payload === 'string') {
-          simulateClick(command.payload);
-        }
-        break;
-      case 'FILL_FORM':
-        if (command.payload && typeof command.payload === 'object') {
-          const { fieldType, value } = command.payload as { fieldType: string, value: string };
-          fillForm(fieldType, value);
-        }
-        break;
-    }
-  }, [command]);
 
   const navigateTo = (newUrl: string) => {
     try {
@@ -226,6 +189,71 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
       console.error("Erreur lors du remplissage du formulaire:", e);
     }
   };
+
+  const scrollPage = (direction: 'up' | 'down') => {
+    try {
+      const iframe = iframeRef.current;
+      if (!iframe || !iframe.contentWindow) {
+        speak("Je n'arrive pas à faire défiler la page.");
+        return;
+      }
+
+      const amount = direction === 'down' ? 300 : -300;
+      iframe.contentWindow.scrollBy({ top: amount, behavior: 'smooth' });
+      
+      speak(direction === 'down' ? "Je défile vers le bas." : "Je défile vers le haut.");
+    } catch (e) {
+      speak("Je n'ai pas pu faire défiler cette page en raison de restrictions de sécurité.");
+      console.error("Erreur lors du défilement:", e);
+    }
+  };
+
+  useEffect(() => {
+    if (!command) return;
+
+    switch (command.type) {
+      case 'OPEN_URL':
+        if (typeof command.payload === 'string') {
+          navigateTo(command.payload);
+        }
+        break;
+      case 'SEARCH':
+        if (typeof command.payload === 'string') {
+          const searchQuery = encodeURIComponent(command.payload);
+          navigateTo(`https://www.google.com/search?q=${searchQuery}`);
+        }
+        break;
+      case 'GO_BACK':
+        goBack();
+        break;
+      case 'GO_FORWARD':
+        goForward();
+        break;
+      case 'HOME':
+        navigateTo('https://www.google.com');
+        break;
+      case 'READ_PAGE':
+        readPageContent();
+        break;
+      case 'CLICK':
+        if (typeof command.payload === 'string') {
+          simulateClick(command.payload);
+        }
+        break;
+      case 'FILL_FORM':
+        if (command.payload && typeof command.payload === 'object') {
+          const { fieldType, value } = command.payload as { fieldType: string, value: string };
+          fillForm(fieldType, value);
+        }
+        break;
+      case 'SCROLL_DOWN':
+        scrollPage('down');
+        break;
+      case 'SCROLL_UP':
+        scrollPage('up');
+        break;
+    }
+  }, [command]);
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-white rounded-lg shadow-sm animate-fade-in">

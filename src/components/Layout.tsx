@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import VoiceControl from './VoiceControl';
 import WebBrowser from './WebBrowser';
 import AccessibilityControls from './AccessibilityControls';
 import { Command } from '@/utils/browserCommands';
 import { Button } from '@/components/ui/button';
-import { Home, Settings, BookOpen, History, HelpCircle } from 'lucide-react';
+import { Home, Settings, BookOpen, History, HelpCircle, Menu, BookOpenCheck } from 'lucide-react';
 import { checkSpeechSupport } from '@/utils/speechUtils';
 import { useToast } from "@/hooks/use-toast";
 

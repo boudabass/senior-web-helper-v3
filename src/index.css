@@ -157,4 +157,33 @@
   .accessibility-controls {
     @apply flex items-center gap-3 p-3 mb-4 bg-white rounded-lg shadow-sm;
   }
+
+  /* Animations de fade-in */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Animation douce pour le pulse */
+  .animate-pulse-gentle {
+    animation: pulseGentle 2s infinite;
+  }
+
+  @keyframes pulseGentle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+  }
+
+  /* Carte d'info pour la page d'accueil */
+  .info-card {
+    @apply bg-white p-6 rounded-xl shadow-md border border-border transition-all;
+  }
+  
+  .info-card:hover {
+    @apply shadow-lg transform -translate-y-1;
+  }
 }

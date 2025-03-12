@@ -9,6 +9,8 @@ export type CommandType =
   | 'GO_FORWARD'
   | 'HOME'
   | 'READ_PAGE'
+  | 'SCROLL_UP'
+  | 'SCROLL_DOWN'
   | 'UNKNOWN';
 
 export interface Command {
@@ -38,7 +40,7 @@ export const parseVoiceCommand = (text: string): Command => {
   const normalizedText = text.toLowerCase().trim();
   
   // Commande d'ouverture d'un site
-  if (normalizedText.includes('ouvre') || normalizedText.includes('va sur') || normalizedText.includes('va à')) {
+  if (normalizedText.includes('ouvre') || normalizedText.includes('va sur') || normalizedText.includes('va à') || normalizedText.includes('ouvrir')) {
     for (const [siteName, url] of Object.entries(predefinedSites)) {
       if (normalizedText.includes(siteName)) {
         return { type: 'OPEN_URL', payload: url };
@@ -46,7 +48,7 @@ export const parseVoiceCommand = (text: string): Command => {
     }
     
     // Si le site n'est pas reconnu dans notre liste prédéfinie
-    const urlMatch = normalizedText.match(/(?:ouvre|va sur|va à)\s+(?:le site|la page)?\s*([\w.-]+\.\w+)/i);
+    const urlMatch = normalizedText.match(/(?:ouvre|va sur|va à|ouvrir)\s+(?:le site|la page)?\s*([\w.-]+\.\w+)/i);
     if (urlMatch && urlMatch[1]) {
       let url = urlMatch[1];
       if (!url.startsWith('http')) {
@@ -57,10 +59,11 @@ export const parseVoiceCommand = (text: string): Command => {
   }
   
   // Commande de recherche
-  if (normalizedText.includes('cherche') || normalizedText.includes('recherche')) {
+  if (normalizedText.includes('cherche') || normalizedText.includes('recherche') || normalizedText.includes('rechercher')) {
     const searchQuery = normalizedText
       .replace(/cherche/i, '')
       .replace(/recherche/i, '')
+      .replace(/rechercher/i, '')
       .trim();
     
     if (searchQuery) {
@@ -115,6 +118,15 @@ export const parseVoiceCommand = (text: string): Command => {
   
   if (normalizedText.includes('accueil') || normalizedText.includes('page principale')) {
     return { type: 'HOME' };
+  }
+  
+  // Commandes de défilement
+  if (normalizedText.includes('défiler vers le bas') || normalizedText.includes('descendre')) {
+    return { type: 'SCROLL_DOWN' };
+  }
+  
+  if (normalizedText.includes('défiler vers le haut') || normalizedText.includes('monter')) {
+    return { type: 'SCROLL_UP' };
   }
   
   // Lecture de page
