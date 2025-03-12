@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import { createSpeechRecognition, speak, checkSpeechSupport } from '@/utils/speechUtils';
 import { Command, parseVoiceCommand } from '@/utils/browserCommands';
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface VoiceControlProps {
   onCommand: (command: Command) => void;

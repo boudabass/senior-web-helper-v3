@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { ZoomIn, ZoomOut, Sun, Moon, Type } from 'lucide-react';
 import { Slider } from "@/components/ui/slider";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface AccessibilityControlsProps {
   onZoomChange: (zoom: number) => void;

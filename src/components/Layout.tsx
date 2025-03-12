@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import VoiceControl from './VoiceControl';
 import WebBrowser from './WebBrowser';
@@ -7,7 +6,7 @@ import { Command } from '@/utils/browserCommands';
 import { Button } from '@/components/ui/button';
 import { Home, Settings, BookOpen, History, HelpCircle } from 'lucide-react';
 import { checkSpeechSupport } from '@/utils/speechUtils';
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface LayoutProps {
   children?: React.ReactNode;

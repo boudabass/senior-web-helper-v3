@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +14,7 @@ import {
 import { Command, extractPageContent } from '@/utils/browserCommands';
 import { speak } from '@/utils/speechUtils';
 import { Card, CardContent } from "@/components/ui/card";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface WebBrowserProps {
   command: Command | null;
@@ -32,7 +31,6 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const { toast } = useToast();
 
-  // Traiter les commandes vocales
   useEffect(() => {
     if (!command) return;
 
@@ -61,15 +59,11 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
         readPageContent();
         break;
       case 'CLICK':
-        // Cette fonctionnalité est complexe car elle nécessite d'accéder au DOM de l'iframe
-        // Ici, nous montrons une approche simplifiée
         if (typeof command.payload === 'string') {
           simulateClick(command.payload);
         }
         break;
       case 'FILL_FORM':
-        // Cette fonctionnalité est aussi complexe pour les mêmes raisons
-        // Nous montrons une approche simplifiée
         if (command.payload && typeof command.payload === 'object') {
           const { fieldType, value } = command.payload as { fieldType: string, value: string };
           fillForm(fieldType, value);
@@ -78,28 +72,23 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
     }
   }, [command]);
 
-  // Navigation vers une URL
   const navigateTo = (newUrl: string) => {
     try {
-      // S'assurer que l'URL a un protocole
       let processedUrl = newUrl;
       if (!processedUrl.startsWith('http')) {
         processedUrl = 'https://' + processedUrl;
       }
       
-      // Valider que c'est une URL correcte
       new URL(processedUrl);
       
       setIsLoading(true);
       setUrl(processedUrl);
       setInputUrl(processedUrl);
       
-      // Mettre à jour l'historique
       const newHistory = [...history.slice(0, historyIndex + 1), processedUrl];
       setHistory(newHistory);
       setHistoryIndex(newHistory.length - 1);
       
-      // Mettre à jour l'état de navigation
       setCanGoBack(newHistory.length > 1);
       setCanGoForward(false);
     } catch (e) {
@@ -111,22 +100,18 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
     }
   };
 
-  // Gérer le chargement de l'iframe
   const handleIframeLoad = () => {
     setIsLoading(false);
-    // Essayer de mettre à jour l'URL affichée avec l'URL réelle
     try {
       if (iframeRef.current && iframeRef.current.contentWindow) {
         const currentUrl = iframeRef.current.contentWindow.location.href;
         setInputUrl(currentUrl);
       }
     } catch (e) {
-      // Certains sites peuvent bloquer l'accès à l'iframe pour des raisons de sécurité
       console.log("Impossible d'accéder à l'URL de l'iframe:", e);
     }
   };
 
-  // Navigation arrière
   const goBack = () => {
     if (historyIndex > 0) {
       const newIndex = historyIndex - 1;
@@ -138,7 +123,6 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
     }
   };
 
-  // Navigation avant
   const goForward = () => {
     if (historyIndex < history.length - 1) {
       const newIndex = historyIndex + 1;
@@ -150,7 +134,6 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
     }
   };
 
-  // Actualiser la page
   const refresh = () => {
     setIsLoading(true);
     if (iframeRef.current) {
@@ -158,13 +141,11 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
     }
   };
 
-  // Gérer la soumission du formulaire d'URL
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     navigateTo(inputUrl);
   };
 
-  // Lire le contenu de la page
   const readPageContent = () => {
     try {
       const content = extractPageContent(iframeRef.current);
@@ -175,7 +156,6 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
     }
   };
 
-  // Simulation de clic (version simplifiée)
   const simulateClick = (elementName: string) => {
     try {
       const iframe = iframeRef.current;
@@ -184,7 +164,6 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
         return;
       }
 
-      // Recherche de boutons ou liens contenant le texte
       const elements = Array.from(iframe.contentDocument.querySelectorAll('button, a, [role="button"], input[type="submit"], input[type="button"]'));
       
       const matchingElement = elements.find(el => {
@@ -209,7 +188,6 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
     }
   };
 
-  // Remplissage de formulaire (version simplifiée)
   const fillForm = (fieldType: string, value: string) => {
     try {
       const iframe = iframeRef.current;
@@ -218,7 +196,6 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
         return;
       }
 
-      // Recherche d'un champ de formulaire correspondant
       const inputs = Array.from(iframe.contentDocument.querySelectorAll('input, textarea'));
       
       const matchingInput = inputs.find(input => {
@@ -239,7 +216,6 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
         (matchingInput as HTMLInputElement).value = value;
         speak(`J'ai rempli le champ "${fieldType}" avec "${value}".`);
         
-        // Simuler un événement de changement pour déclencher les mises à jour nécessaires
         const event = new Event('input', { bubbles: true });
         matchingInput.dispatchEvent(event);
       } else {
@@ -253,7 +229,6 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-white rounded-lg shadow-sm animate-fade-in">
-      {/* Barre de navigation */}
       <Card className="rounded-t-lg rounded-b-none border-b">
         <CardContent className="p-2">
           <div className="flex items-center space-x-2">
@@ -329,7 +304,6 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
         </CardContent>
       </Card>
       
-      {/* Navigateur */}
       <div className="flex-1 relative">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
