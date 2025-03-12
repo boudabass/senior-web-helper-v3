@@ -160,15 +160,33 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <HelpCircle size={24} />
               </Button>
               
-              <SheetTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  className="btn-xl"
-                >
-                  <Users size={24} />
-                </Button>
-              </SheetTrigger>
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    className="btn-xl"
+                  >
+                    <Users size={24} />
+                  </Button>
+                </SheetTrigger>
+                
+                <SheetContent side="left" className="w-[350px] sm:w-[450px] overflow-y-auto">
+                  <SheetHeader className="text-left mb-6">
+                    <SheetTitle className="text-2xl">Profils Utilisateurs</SheetTitle>
+                  </SheetHeader>
+                  
+                  <ProfileManager 
+                    profiles={profiles}
+                    currentProfile={currentProfile}
+                    isLoading={isLoading}
+                    createProfile={createProfile}
+                    updateProfile={updateProfile}
+                    deleteProfile={deleteProfile}
+                    switchProfile={switchProfile}
+                  />
+                </SheetContent>
+              </Sheet>
               
               <Button 
                 variant="outline" 
@@ -212,25 +230,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <WebBrowser command={command} />
         </div>
       </div>
-      
-      {/* Gestionnaire de profils */}
-      <Sheet>
-        <SheetContent side="left" className="w-[350px] sm:w-[450px] overflow-y-auto">
-          <SheetHeader className="text-left mb-6">
-            <SheetTitle className="text-2xl">Profils Utilisateurs</SheetTitle>
-          </SheetHeader>
-          
-          <ProfileManager 
-            profiles={profiles}
-            currentProfile={currentProfile}
-            isLoading={isLoading}
-            createProfile={createProfile}
-            updateProfile={updateProfile}
-            deleteProfile={deleteProfile}
-            switchProfile={switchProfile}
-          />
-        </SheetContent>
-      </Sheet>
     </div>
   );
 };
