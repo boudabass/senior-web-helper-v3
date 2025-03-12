@@ -70,7 +70,7 @@ export const isSpeechSynthesisSupported = (): boolean => {
   return typeof window !== 'undefined' && 'speechSynthesis' in window;
 };
 
-// Fonction pour convertir du texte en parole
+// Fonction pour convertir du texte en parole avec les paramètres de profil
 export const speak = (text: string, rate: number = 0.9, pitch: number = 1, volume: number = 1): void => {
   if (!isSpeechSynthesisSupported()) return;
 

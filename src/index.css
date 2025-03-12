@@ -85,6 +85,66 @@
     --sidebar-border: 217 33% 18%;
     --sidebar-ring: 224 76% 48%;
   }
+  
+  /* Styles pour les profils avec contraste élevé */
+  [data-contrast="high"] {
+    --primary: 221 100% 50%;
+    --foreground: 0 0% 0%;
+    --background: 0 0% 100%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --border: 0 0% 40%;
+    --muted-foreground: 0 0% 20%;
+    
+    /* Augmenter le contraste des couleurs */
+    .text-muted-foreground {
+      @apply text-gray-700;
+    }
+    
+    .border {
+      @apply border-gray-500;
+    }
+    
+    /* Améliorer la visibilité des boutons */
+    .btn-xl, .button {
+      @apply shadow-md;
+    }
+  }
+  
+  /* Styles pour les profils avec contraste très élevé */
+  [data-contrast="very-high"] {
+    --primary: 221 100% 45%;
+    --foreground: 0 0% 0%;
+    --background: 0 0% 100%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --border: 0 0% 0%;
+    --muted-foreground: 0 0% 0%;
+    
+    /* Forcer un contraste maximal */
+    .text-muted-foreground {
+      @apply text-black;
+    }
+    
+    .border {
+      @apply border-black border-2;
+    }
+    
+    /* Améliorer la visibilité des éléments interactifs */
+    .btn-xl, .button {
+      @apply shadow-lg border-2 border-black;
+    }
+    
+    /* Forcer un contraste élevé sur les liens */
+    a {
+      @apply text-blue-800 underline font-bold;
+    }
+    
+    /* Ajouter des contours aux éléments importants */
+    input, select, .card {
+      @apply border-2 border-black;
+    }
+  }
 }
 
 @layer base {
@@ -185,5 +245,18 @@
   
   .info-card:hover {
     @apply shadow-lg transform -translate-y-1;
+  }
+  
+  /* Styles pour le gestionnaire de profils */
+  .profile-card {
+    @apply p-4 border border-border rounded-lg transition-all;
+  }
+  
+  .profile-card.active {
+    @apply border-primary bg-primary/5;
+  }
+  
+  .profile-card:hover:not(.active) {
+    @apply bg-secondary/50;
   }
 }

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Mic, MicOff, Volume2, VolumeX, HelpCircle } from 'lucide-react';
@@ -8,9 +9,16 @@ import { useToast } from "@/hooks/use-toast";
 interface VoiceControlProps {
   onCommand: (command: Command) => void;
   isEnabled: boolean;
+  volume?: number;
+  voiceSpeed?: number;
 }
 
-const VoiceControl: React.FC<VoiceControlProps> = ({ onCommand, isEnabled }) => {
+const VoiceControl: React.FC<VoiceControlProps> = ({ 
+  onCommand, 
+  isEnabled,
+  volume = 1,
+  voiceSpeed = 1
+}) => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [tempTranscript, setTempTranscript] = useState('');
@@ -96,9 +104,9 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ onCommand, isEnabled }) => 
     if (!isListening) {
       setTranscript('');
       setTempTranscript('');
-      speak('Commande vocale activée. Comment puis-je vous aider?');
+      speak('Commande vocale activée. Comment puis-je vous aider?', voiceSpeed, 1, volume);
     } else {
-      speak('Commande vocale désactivée.');
+      speak('Commande vocale désactivée.', voiceSpeed, 1, volume);
     }
   };
 
@@ -106,17 +114,22 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ onCommand, isEnabled }) => 
     setVoiceEnabled(prev => !prev);
     
     if (voiceEnabled) {
-      speak('Synthèse vocale désactivée');
+      speak('Synthèse vocale désactivée', voiceSpeed, 1, volume);
       // On la désactive après avoir prononcé le message
       setTimeout(() => window.speechSynthesis.cancel(), 2000);
     } else {
-      speak('Synthèse vocale activée');
+      speak('Synthèse vocale activée', voiceSpeed, 1, volume);
     }
   };
 
   const showHelp = () => {
     if (voiceEnabled) {
-      speak('Voici les commandes disponibles: Ouvrir suivi du nom d\'un site web, Rechercher suivi de votre requête, Retour pour revenir en arrière, Défiler vers le bas ou le haut, Agrandir le texte, et Aide pour afficher cette liste.');
+      speak(
+        'Voici les commandes disponibles: Ouvrir suivi du nom d\'un site web, Rechercher suivi de votre requête, Retour pour revenir en arrière, Défiler vers le bas ou le haut, Agrandir le texte, et Aide pour afficher cette liste.',
+        voiceSpeed,
+        1,
+        volume
+      );
     }
     
     toast({
@@ -169,12 +182,18 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ onCommand, isEnabled }) => 
         case 'READ_PAGE':
           responseMessage = `Je vais vous lire le contenu de cette page.`;
           break;
+        case 'SCROLL_DOWN':
+          responseMessage = `Je défile vers le bas.`;
+          break;
+        case 'SCROLL_UP':
+          responseMessage = `Je défile vers le haut.`;
+          break;
         case 'UNKNOWN':
           responseMessage = `Désolé, je n'ai pas compris cette commande.`;
           break;
       }
       
-      speak(responseMessage);
+      speak(responseMessage, voiceSpeed, 1, volume);
     }
     
     onCommand(command);

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { ZoomIn, ZoomOut, Sun, Moon, Type } from 'lucide-react';
 import { Slider } from "@/components/ui/slider";
@@ -6,13 +7,25 @@ import { useToast } from "@/hooks/use-toast";
 
 interface AccessibilityControlsProps {
   onZoomChange: (zoom: number) => void;
+  initialZoom?: number;
+  initialDarkMode?: boolean;
 }
 
-const AccessibilityControls: React.FC<AccessibilityControlsProps> = ({ onZoomChange }) => {
-  const [zoom, setZoom] = useState(100);
+const AccessibilityControls: React.FC<AccessibilityControlsProps> = ({ 
+  onZoomChange, 
+  initialZoom = 100,
+  initialDarkMode = false
+}) => {
+  const [zoom, setZoom] = useState(initialZoom);
   const [contrast, setContrast] = useState(100);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(initialDarkMode);
   const { toast } = useToast();
+
+  // Appliquer les paramètres initiaux
+  useEffect(() => {
+    setZoom(initialZoom);
+    setIsDarkMode(initialDarkMode);
+  }, [initialZoom, initialDarkMode]);
 
   const handleZoomIn = () => {
     if (zoom < 200) {
