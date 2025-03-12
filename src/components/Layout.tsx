@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import VoiceControl from './VoiceControl';
 import WebBrowser from './WebBrowser';
@@ -25,15 +24,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const speechSupport = checkSpeechSupport();
   
   // Utilisation du hook de profils utilisateur
-  const { 
-    profiles, 
-    currentProfile, 
-    isLoading,
-    createProfile, 
-    updateProfile, 
-    deleteProfile, 
-    switchProfile 
-  } = useUserProfiles();
+  const { profiles, currentProfile, isLoading, createProfile, updateProfile, deleteProfile, switchProfile } = useUserProfiles();
 
   const handleCommand = (newCommand: Command) => {
     setCommand(newCommand);
@@ -221,11 +212,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       
       {/* Main content */}
       <div className="flex-grow flex flex-col p-4 overflow-hidden">
-        <AccessibilityControls 
-          onZoomChange={handleZoomChange} 
-          initialZoom={currentProfile?.textSize || 100} 
-          initialDarkMode={currentProfile?.colorTheme === 'dark'}
-        />
+        <AccessibilityControls onZoomChange={handleZoomChange} initialZoom={currentProfile?.textSize || 100} initialDarkMode={currentProfile?.colorTheme === 'dark'} />
         <div className="browser-container flex-grow" style={{ fontSize: `${browserZoom}%` }}>
           <WebBrowser command={command} />
         </div>
