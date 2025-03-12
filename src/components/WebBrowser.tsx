@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,12 +14,16 @@ import {
   ArrowUp,
   ArrowDown,
   ZoomIn,
-  ZoomOut
+  ZoomOut,
+  Star,
+  Sparkles
 } from 'lucide-react';
 import { Command, extractPageContent } from '@/utils/browserCommands';
 import { speak } from '@/utils/speechUtils';
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { simplifyWebPage } from '@/utils/simplifyWebPage';
+import { useFavorites } from '@/hooks/useFavorites';
 
 interface WebBrowserProps {
   command: Command | null;
@@ -32,8 +37,10 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
   const [inputUrl, setInputUrl] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [isSimplified, setIsSimplified] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const { toast } = useToast();
+  const { addFavorite, getFavoriteByName, removeFavorite, favorites } = useFavorites();
 
   const navigateTo = (newUrl: string) => {
     try {
@@ -47,6 +54,7 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
       setIsLoading(true);
       setUrl(processedUrl);
       setInputUrl(processedUrl);
+      setIsSimplified(false);
       
       const newHistory = [...history.slice(0, historyIndex + 1), processedUrl];
       setHistory(newHistory);
@@ -83,6 +91,7 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
       setInputUrl(history[newIndex]);
       setCanGoBack(newIndex > 0);
       setCanGoForward(true);
+      setIsSimplified(false);
     }
   };
 
@@ -94,11 +103,13 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
       setInputUrl(history[newIndex]);
       setCanGoBack(true);
       setCanGoForward(newIndex < history.length - 1);
+      setIsSimplified(false);
     }
   };
 
   const refresh = () => {
     setIsLoading(true);
+    setIsSimplified(false);
     if (iframeRef.current) {
       iframeRef.current.src = url;
     }
@@ -116,6 +127,138 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
     } catch (e) {
       speak("Je suis désolé, je n'ai pas pu lire le contenu de cette page.");
       console.error("Erreur lors de la lecture de la page:", e);
+    }
+  };
+
+  const simplifyPage = () => {
+    try {
+      const success = simplifyWebPage(iframeRef.current, 1.5, true);
+      if (success) {
+        setIsSimplified(true);
+        speak("J'ai simplifié la page pour vous. Les textes sont plus grands et les distractions ont été supprimées.");
+        toast({
+          title: "Page simplifiée",
+          description: "La page a été adaptée pour une meilleure lisibilité.",
+        });
+      } else {
+        speak("Je n'ai pas pu simplifier cette page en raison de restrictions de sécurité.");
+        toast({
+          title: "Erreur",
+          description: "Impossible de simplifier cette page.",
+          variant: "destructive",
+        });
+      }
+    } catch (e) {
+      speak("Je n'ai pas pu simplifier cette page en raison d'une erreur technique.");
+      console.error("Erreur lors de la simplification de la page:", e);
+    }
+  };
+
+  const addToFavorites = (name: string) => {
+    try {
+      // Vérifier si l'URL actuelle est valide
+      if (!iframeRef.current || !iframeRef.current.contentWindow) {
+        speak("Je ne peux pas ajouter cette page aux favoris car je n'ai pas accès à l'URL actuelle.");
+        return;
+      }
+      
+      // Récupérer l'URL actuelle
+      const currentUrl = iframeRef.current.contentWindow.location.href;
+      
+      // Si le nom est vide, utiliser le titre de la page
+      let favoriteName = name;
+      if (!favoriteName || favoriteName === 'Favori sans nom') {
+        try {
+          favoriteName = iframeRef.current.contentDocument?.title || 'Page sans titre';
+        } catch (e) {
+          favoriteName = 'Page sans titre';
+        }
+      }
+      
+      // Vérifier si un favori avec ce nom existe déjà
+      const existingFavorite = getFavoriteByName(favoriteName);
+      if (existingFavorite) {
+        speak(`Un favori avec le nom ${favoriteName} existe déjà. Veuillez choisir un autre nom.`);
+        toast({
+          title: "Nom déjà utilisé",
+          description: `Un favori avec le nom "${favoriteName}" existe déjà.`,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Ajouter le favori
+      const newFavorite = addFavorite(favoriteName, currentUrl);
+      
+      speak(`J'ai ajouté ${favoriteName} à vos favoris.`);
+      toast({
+        title: "Favori ajouté",
+        description: `"${favoriteName}" a été ajouté à vos favoris.`,
+      });
+    } catch (e) {
+      speak("Je n'ai pas pu ajouter cette page aux favoris.");
+      console.error("Erreur lors de l'ajout du favori:", e);
+    }
+  };
+
+  const openFavorite = (name: string) => {
+    // Chercher le favori par son nom
+    const favorite = getFavoriteByName(name);
+    
+    if (favorite) {
+      navigateTo(favorite.url);
+      speak(`J'ouvre votre favori ${name}.`);
+    } else {
+      speak(`Je n'ai pas trouvé de favori nommé ${name}.`);
+      toast({
+        title: "Favori introuvable",
+        description: `Aucun favori nommé "${name}" n'a été trouvé.`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const listFavorites = () => {
+    if (favorites.length === 0) {
+      speak("Vous n'avez pas encore de favoris enregistrés.");
+      return;
+    }
+    
+    let message = `Vous avez ${favorites.length} favoris: `;
+    favorites.forEach((favorite, index) => {
+      message += `${favorite.name}${index < favorites.length - 1 ? ', ' : '.'}`;
+    });
+    
+    speak(message);
+    
+    toast({
+      title: "Vos favoris",
+      description: message,
+      duration: 5000,
+    });
+  };
+  
+  const removeFavoriteByName = (name: string) => {
+    const favorite = getFavoriteByName(name);
+    
+    if (favorite) {
+      const success = removeFavorite(favorite.id);
+      if (success) {
+        speak(`J'ai supprimé le favori ${name}.`);
+        toast({
+          title: "Favori supprimé",
+          description: `"${name}" a été supprimé de vos favoris.`,
+        });
+      } else {
+        speak(`Je n'ai pas pu supprimer le favori ${name}.`);
+      }
+    } else {
+      speak(`Je n'ai pas trouvé de favori nommé ${name}.`);
+      toast({
+        title: "Favori introuvable",
+        description: `Aucun favori nommé "${name}" n'a été trouvé.`,
+        variant: "destructive",
+      });
     }
   };
 
@@ -252,6 +395,27 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
       case 'SCROLL_UP':
         scrollPage('up');
         break;
+      case 'ADD_FAVORITE':
+        if (typeof command.payload === 'string') {
+          addToFavorites(command.payload);
+        }
+        break;
+      case 'OPEN_FAVORITE':
+        if (typeof command.payload === 'string') {
+          openFavorite(command.payload);
+        }
+        break;
+      case 'LIST_FAVORITES':
+        listFavorites();
+        break;
+      case 'REMOVE_FAVORITE':
+        if (typeof command.payload === 'string') {
+          removeFavoriteByName(command.payload);
+        }
+        break;
+      case 'SIMPLIFY_PAGE':
+        simplifyPage();
+        break;
     }
   }, [command]);
 
@@ -327,6 +491,24 @@ const WebBrowser: React.FC<WebBrowserProps> = ({ command }) => {
               title="Lire la page"
             >
               <Book size={20} />
+            </Button>
+            
+            <Button 
+              variant={isSimplified ? "default" : "ghost"}
+              size="icon" 
+              onClick={simplifyPage}
+              title="Simplifier la page"
+            >
+              <Sparkles size={20} />
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => addToFavorites('Favori sans nom')}
+              title="Ajouter aux favoris"
+            >
+              <Star size={20} />
             </Button>
           </div>
         </CardContent>

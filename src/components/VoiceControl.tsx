@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Mic, MicOff, Volume2, VolumeX, HelpCircle } from 'lucide-react';
-import { createSpeechRecognition, speak, checkSpeechSupport } from '@/utils/speechUtils';
+import { createSpeechRecognition, speak } from '@/utils/speechUtils';
 import { Command, parseVoiceCommand } from '@/utils/browserCommands';
 import { useToast } from "@/hooks/use-toast";
 
@@ -125,7 +124,7 @@ const VoiceControl: React.FC<VoiceControlProps> = ({
   const showHelp = () => {
     if (voiceEnabled) {
       speak(
-        'Voici les commandes disponibles: Ouvrir suivi du nom d\'un site web, Rechercher suivi de votre requête, Retour pour revenir en arrière, Défiler vers le bas ou le haut, Agrandir le texte, et Aide pour afficher cette liste.',
+        'Voici les commandes disponibles: Ouvrir suivi du nom d\'un site web, Rechercher suivi de votre requête, Retour pour revenir en arrière, Défiler vers le bas ou le haut, Agrandir le texte, Simplifier la page, Enregistrer comme favori suivi d\'un nom, et Aide pour afficher cette liste.',
         voiceSpeed,
         1,
         volume
@@ -140,6 +139,10 @@ const VoiceControl: React.FC<VoiceControlProps> = ({
         • "Retour" - Revenir à la page précédente
         • "Défiler vers le bas/haut" - Faire défiler la page
         • "Agrandir le texte" - Augmenter la taille du texte
+        • "Simplifier la page" - Rendre la page plus lisible
+        • "Enregistrer comme favori [nom]" - Ajouter aux favoris
+        • "Ouvrir favori [nom]" - Ouvrir un site favori
+        • "Liste mes favoris" - Afficher tous vos favoris
         • "Aide" - Afficher cette liste des commandes
       `,
       duration: 8000,
@@ -187,6 +190,21 @@ const VoiceControl: React.FC<VoiceControlProps> = ({
           break;
         case 'SCROLL_UP':
           responseMessage = `Je défile vers le haut.`;
+          break;
+        case 'ADD_FAVORITE':
+          responseMessage = `J'enregistre cette page dans vos favoris.`;
+          break;
+        case 'OPEN_FAVORITE':
+          responseMessage = `J'ouvre votre favori "${command.payload}".`;
+          break;
+        case 'LIST_FAVORITES':
+          responseMessage = `Voici la liste de vos favoris.`;
+          break;
+        case 'REMOVE_FAVORITE':
+          responseMessage = `Je supprime le favori "${command.payload}".`;
+          break;
+        case 'SIMPLIFY_PAGE':
+          responseMessage = `Je simplifie cette page pour vous.`;
           break;
         case 'UNKNOWN':
           responseMessage = `Désolé, je n'ai pas compris cette commande.`;

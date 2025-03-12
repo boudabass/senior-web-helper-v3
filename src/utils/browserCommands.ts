@@ -11,6 +11,11 @@ export type CommandType =
   | 'READ_PAGE'
   | 'SCROLL_UP'
   | 'SCROLL_DOWN'
+  | 'ADD_FAVORITE'
+  | 'OPEN_FAVORITE'
+  | 'LIST_FAVORITES'
+  | 'REMOVE_FAVORITE'
+  | 'SIMPLIFY_PAGE'
   | 'UNKNOWN';
 
 export interface Command {
@@ -41,6 +46,15 @@ export const parseVoiceCommand = (text: string): Command => {
   
   // Commande d'ouverture d'un site
   if (normalizedText.includes('ouvre') || normalizedText.includes('va sur') || normalizedText.includes('va à') || normalizedText.includes('ouvrir')) {
+    // Gestion des favoris
+    if (normalizedText.includes('favori')) {
+      const favMatch = normalizedText.match(/(?:ouvre|va sur|va à|ouvrir)\s+(?:le favori|la page|le site|mon favori)\s+(.+)/i);
+      if (favMatch && favMatch[1]) {
+        return { type: 'OPEN_FAVORITE', payload: favMatch[1].trim() };
+      }
+    }
+    
+    // Sites prédéfinis
     for (const [siteName, url] of Object.entries(predefinedSites)) {
       if (normalizedText.includes(siteName)) {
         return { type: 'OPEN_URL', payload: url };
@@ -56,6 +70,35 @@ export const parseVoiceCommand = (text: string): Command => {
       }
       return { type: 'OPEN_URL', payload: url };
     }
+  }
+  
+  // Commande pour enregistrer un favori
+  if (normalizedText.includes('enregistre') || normalizedText.includes('ajoute') || normalizedText.includes('sauvegarde')) {
+    if (normalizedText.includes('favori')) {
+      const favMatch = normalizedText.match(/(?:enregistre|ajoute|sauvegarde)(?:\s+cette page|\s+ce site)?\s+(?:comme|en)?\s+favori(?:\s+sous le nom)?\s+(.+)/i);
+      if (favMatch && favMatch[1]) {
+        return { type: 'ADD_FAVORITE', payload: favMatch[1].trim() };
+      }
+      return { type: 'ADD_FAVORITE', payload: 'Favori sans nom' };
+    }
+  }
+  
+  // Lister les favoris
+  if (normalizedText.includes('liste') && normalizedText.includes('favori')) {
+    return { type: 'LIST_FAVORITES' };
+  }
+  
+  // Supprimer un favori
+  if ((normalizedText.includes('supprime') || normalizedText.includes('efface') || normalizedText.includes('retire')) && normalizedText.includes('favori')) {
+    const favMatch = normalizedText.match(/(?:supprime|efface|retire)\s+le\s+favori\s+(.+)/i);
+    if (favMatch && favMatch[1]) {
+      return { type: 'REMOVE_FAVORITE', payload: favMatch[1].trim() };
+    }
+  }
+  
+  // Simplification de page
+  if (normalizedText.includes('simplifie') || (normalizedText.includes('simplifier') && normalizedText.includes('page'))) {
+    return { type: 'SIMPLIFY_PAGE' };
   }
   
   // Commande de recherche
