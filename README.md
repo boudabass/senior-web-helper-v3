@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+# Senior 3000
 
 ## Project info
 
