@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Settings, History, HelpCircle, Users } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import ProfileManager from '../ProfileManager';
+import ProfileManager from '../profile';
 import { UserProfile } from '@/types/userProfile';
 
 interface SidebarFooterProps {
