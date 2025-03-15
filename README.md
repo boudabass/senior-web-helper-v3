@@ -1,4 +1,4 @@
-# Senior 3000 V0.0.5
+# Welcome to your Lovable project
 
 ## Project info
 
