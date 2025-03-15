@@ -1,4 +1,4 @@
-# Senior 3000
+# Senior 3000 V0.0.5
 
 ## Project info
 
